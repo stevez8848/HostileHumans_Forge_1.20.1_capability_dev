@@ -1,0 +1,47 @@
+# This is an example mods.toml file. It contains the data relating to the loading mods.
+# There are several mandatory fields (#mandatory), and many more that are optional (#optional).
+# The overall format is standard TOML format, v0.5.0.
+# Note that there are a couple of TOML lists in this file.
+# Find more information on toml format here:  https://github.com/toml-lang/toml
+# The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
+modLoader="javafml"
+
+loaderVersion="[47,)"
+license="All rights reserved"
+
+[[mods]] #mandatory
+  modId="hostile_humans"
+  version="1.2.4"
+  displayName="Hostile Humans mod"
+  displayURL="https://linktr.ee/craft1x"
+  logoFile="logo.png"
+  authors="Craft1x"
+  description='''This mod adds hostile humans and structures to your minecraft world!'''
+
+[[dependencies.hostile_humans]]
+  modId="forge"
+  mandatory=true
+  versionRange="[47,)"
+  ordering="NONE"
+  side="BOTH"
+
+[[dependencies.hostile_humans]]
+  modId="minecraft"
+  mandatory=true
+  versionRange="[1.20.1,1.21)"
+  ordering="NONE"
+  side="BOTH"
+
+[[dependencies.hostile_humans]]
+  modId="epicfight"
+  mandatory=false
+  versionRange="[20,)"
+  ordering="AFTER"
+  side="BOTH"
+
+[[dependencies.hostile_humans]]
+  modId="epicfightx"
+  mandatory=false
+  versionRange="[1,)"
+  ordering="AFTER"
+  side="BOTH"
