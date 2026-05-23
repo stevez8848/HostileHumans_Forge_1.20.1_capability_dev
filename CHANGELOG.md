@@ -1,5 +1,32 @@
 ## 更新日志
 
+- 调整：Human 的长剑伪进阶技能不再沿用普通剑 `sweeping_edge`，改为播放 `longsword_airslash` 长剑专属动画，并继续保留范围打击、击退和减速效果。
+
+- 修复：移除 `worldgen/structure_set/all_houses.json` 中的 `//` 注释，避免 Minecraft 数据包严格 JSON 解析失败导致 `hostile_humans:*` 结构集合无法注册，从而影响 `/place structure` 指令生成建筑。
+- 验证：已检查 `src/main/resources/data/hostile_humans/worldgen` 下全部 JSON，当前均可被严格解析。
+
+- 紧急调整：Human 目标优先级改为先处理当前攻击者，其次仍将玩家目标保持在高优先级，再处理 Bandit、其他 Human 和普通怪物/动物目标。
+- 调整：Ronin 现在按 Roamer-like 机制处理随机游荡与临时冲突逻辑；多个 Roamer/Ronin 同场且附近存在普通 Human 时，会暂时停止彼此冲突。
+- 新增：加入 `hostile_humans:human_samurai1` 与 `hostile_humans:human_samurai2` 两级武士。武士沿用浪人的打刀/太刀战斗机制，第一级不穿盔甲，第二级会生成盔甲；武士不会主动攻击其他武士，也不会主动攻击非 Bandit 的 Human。
+- 新增：加入 `hostile_humans:human_bandit` 盗贼。盗贼默认使用铁、钻石或下界合金级 Epic Fight 匕首候选，若 EF 匕首不存在则回退铁剑/钻石剑；匕首 80% 概率带随机等级抢夺与锋利。
+- 新增：盗贼使用 Human Tier I 风格护甲池，但只有 30% 概率生成护甲；盗贼的最高行为优先级是寻找并打开箱子，被玩家发现或被攻击后会进入战斗。
+- 新增：除 Bandit 自身外，所有 Human 系实体都会主动攻击 Bandit；铁傀儡也会主动攻击 Bandit。
+- 新增：Bandit 使用自定义高级战利品池，掉落绿宝石、金锭、铜锭、钻石、金苹果、附魔金苹果和下界合金锭等随机战利品；加载 Epic Fight 时额外固定掉落一本带随机 `skill` NBT 的 `epicfight:skillbook`。
+
+- 调整：略微提高浪人生成为打刀/uchigatana 类武器的概率；浪人武器池现在按打刀、太刀、katana 三类做权重选择，打刀类权重从均分提高到约 40%。
+- 调整：将所有 Human 的玩家目标选择提升为最高 `targetSelector` 优先级，高于受击反击、Human 内斗和普通怪物/动物目标。
+- 调整：Roamer 在附近存在非 Roamer Human 时会临时停止把其他 Roamer 视为敌人，并优先把冲突集中到普通 Human / Ronin 等非 Roamer Human 上；附近没有非 Roamer Human 时仍保留 Roamer 内斗。
+
+- 修复：继续收紧 Human 皮肤渲染稳定性；HumanRenderer 现在使用独立 `hostile_humans:human` 模型层，不再复用 vanilla player baked layer，并移除强制 `entityCutoutNoCull` 的 `getRenderType` 覆盖，交回 vanilla `LivingEntityRenderer` 处理可见、半透明、发光和 outline 分支。
+- 修复：每次渲染 Human 前显式重置 `PlayerModel` 的可见性、骑乘、蹲伏、幼体、攻击进度和双手姿态状态，降低 EF/EFX、Oculus/Embeddium 或实体层渲染后模型状态串扰导致皮肤显示异常的概率。
+
+- 新增：加入新实体 `hostile_humans:human_ronin`（Ronin / 浪人），沿用 Human 的基础 AI、渲染和属性体系，注册独立实体类型、客户端渲染、刷怪蛋、语言条目、自然生成入口和空战利品表。
+- 新增：浪人生成为无护甲状态，主手固定使用 Epic Fight 的 `uchigatana` / `tachi` / `katana` 系列武器候选；若实例未安装 Epic Fight 或候选物品不存在，则保守回退为铁剑/钻石剑，避免 EF 缺失时崩溃。
+- 新增：浪人的佩刀有 30% 概率同时附带随机等级的锋利与横扫之刃；死亡时固定额外掉落当前佩刀、24 个绿宝石和 12 条熟鳕鱼，普通随机实体战利品表已置空。
+- 兼容性：为浪人新增 `human_ronin` 的 Epic Fight mobpatch，并在 EFX 内置数据包中加入对应覆盖文件；打刀、太刀和类 katana 武器会沿用现有 Human 人形 EF/EFX 战斗动画配置。
+- 调整：扩展 Human 的伪进阶技能识别范围，新增太刀 `rushing_tempo` 与打刀/katana `battojutsu` / `battojutsu_dash` 触发逻辑；浪人额外模拟 5 秒空闲收刀后的拔刀强化攻击。
+- 修复：修正自然生成 biome modifier 中旧的 `hostile_humans:human_spawner` ID 为实际注册的 `hostile_humans:human_group`，避免该生成配置解析失败。
+
 - 调整：在不减少 Human 皮肤多样性的前提下重做渲染稳定性策略；恢复 `skin1`-`skin43` 完整随机皮肤池，移除同一 `HumanRenderer` 实例中按实体动态切换 slim/classic 主模型的逻辑，并在每次渲染前重置 `PlayerModel` 可见性，降低长期游玩后模型/贴图状态串扰风险。
 - 调整：将 Human 皮肤保险从“全员默认贴图”改为保守安全皮肤池；新生成 Human 仅从 `skin1`-`skin6`、`skin8`-`skin13` 中随机选择，旧存档中不在安全池内的 variant 自动回退到默认 `skin1`。
 - 修复：进一步收紧 Human 皮肤渲染保险；由于纹理错误会随游玩时间扩大，临时禁用 Human 随机皮肤渲染，所有旧存档与新生成 Human 均强制使用默认 `skin1` 和 classic 模型，以优先保证长期游玩稳定性。

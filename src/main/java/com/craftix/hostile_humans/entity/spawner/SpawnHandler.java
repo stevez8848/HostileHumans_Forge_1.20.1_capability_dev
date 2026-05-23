@@ -25,6 +25,14 @@ public class SpawnHandler {
         event.enqueueWork(() -> {
             SpawnPlacements.register(ModEntityType.ROAMER.get(), SpawnPlacements.Type.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkHumanSpawnRules);
+            SpawnPlacements.register(ModEntityType.RONIN.get(), SpawnPlacements.Type.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkHumanSpawnRules);
+            SpawnPlacements.register(ModEntityType.SAMURAI1.get(), SpawnPlacements.Type.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkHumanSpawnRules);
+            SpawnPlacements.register(ModEntityType.SAMURAI2.get(), SpawnPlacements.Type.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkHumanSpawnRules);
+            SpawnPlacements.register(ModEntityType.BANDIT.get(), SpawnPlacements.Type.ON_GROUND,
+                    Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkHumanSpawnRules);
             SpawnPlacements.register(ModEntityType.SPAWNER_ENTITY.get(), SpawnPlacements.Type.ON_GROUND,
                     Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SpawnHandler::checkSpawnerEntityRules);
         });

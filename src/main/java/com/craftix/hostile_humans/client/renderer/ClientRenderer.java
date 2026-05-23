@@ -24,11 +24,15 @@ public class ClientRenderer {
         event.registerEntityRenderer(ModEntityType.HUMAN1.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.HUMAN2.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.ROAMER.get(), HumanRenderer::new);
+        event.registerEntityRenderer(ModEntityType.RONIN.get(), HumanRenderer::new);
+        event.registerEntityRenderer(ModEntityType.SAMURAI1.get(), HumanRenderer::new);
+        event.registerEntityRenderer(ModEntityType.SAMURAI2.get(), HumanRenderer::new);
+        event.registerEntityRenderer(ModEntityType.BANDIT.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.SPAWNER_ENTITY.get(), SpawnerEntityRenderer::new);
     }
 
     public static void registerEntityLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(HUMAN_MODEL_LAYER, () ->
-                LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, true), 64, 64));
+                LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, false), 64, 64));
     }
 }

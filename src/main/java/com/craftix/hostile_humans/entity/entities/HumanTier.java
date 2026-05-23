@@ -1,7 +1,7 @@
 package com.craftix.hostile_humans.entity.entities;
 
 public enum HumanTier {
-    LEVEL1(1), LEVEL2(2), ROAMER(9);
+    LEVEL1(1), LEVEL2(2), ROAMER(9), RONIN(10), SAMURAI1(11), SAMURAI2(12), BANDIT(13);
     public final int id;
 
     HumanTier(int value) {

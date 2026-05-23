@@ -190,6 +190,9 @@ public class HumanUtil {
                 || path.contains("longsword")
                 || path.contains("dagger")
                 || path.contains("greatsword")
+                || path.contains("tachi")
+                || path.contains("uchigatana")
+                || path.contains("katana")
                 || path.equals("glove");
     }
 

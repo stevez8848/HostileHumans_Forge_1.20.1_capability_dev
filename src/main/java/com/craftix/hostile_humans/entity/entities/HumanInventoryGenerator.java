@@ -45,6 +45,22 @@ public class HumanInventoryGenerator {
         HumanTier humanTier = human.getTier();
 
         switch (humanTier) {
+            case RONIN -> {
+                generateRoninInventory(human, random, false);
+                return;
+            }
+            case SAMURAI1 -> {
+                generateRoninInventory(human, random, false);
+                return;
+            }
+            case SAMURAI2 -> {
+                generateRoninInventory(human, random, true);
+                return;
+            }
+            case BANDIT -> {
+                generateBanditInventory(human, random);
+                return;
+            }
             case LEVEL2 -> {
                 armorPick = tier2Armor;
                 weaponPick = tier2Weapons;
@@ -182,6 +198,128 @@ public class HumanInventoryGenerator {
             tridentStack.enchant(Enchantments.VANISHING_CURSE, 1);
             human.setItemSlot(EquipmentSlot.MAINHAND, tridentStack);
         }
+    }
+
+    private static void generateRoninInventory(Human human, RandomSource random, boolean armored) {
+        ItemStack sword = pickRoninSword(random);
+
+        if (random.nextFloat() < 0.3F) {
+            sword.enchant(Enchantments.SHARPNESS, random.nextInt(1, Enchantments.SHARPNESS.getMaxLevel() + 1));
+            sword.enchant(Enchantments.SWEEPING_EDGE, random.nextInt(1, Enchantments.SWEEPING_EDGE.getMaxLevel() + 1));
+        }
+
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            human.setItemSlot(slot, ItemStack.EMPTY);
+        }
+
+        human.setItemSlot(EquipmentSlot.MAINHAND, sword);
+        human.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+
+        if (armored) {
+            equipArmorSet(human, random, tier2Armor, 0.75F, 0.7F);
+        }
+    }
+
+    private static void generateBanditInventory(Human human, RandomSource random) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            human.setItemSlot(slot, ItemStack.EMPTY);
+        }
+
+        ItemStack dagger = pickBanditDagger(random);
+        damage(human, dagger);
+        if (random.nextFloat() < 0.8F) {
+            dagger.enchant(Enchantments.SHARPNESS, random.nextInt(1, Enchantments.SHARPNESS.getMaxLevel() + 1));
+            dagger.enchant(Enchantments.MOB_LOOTING, random.nextInt(1, Enchantments.MOB_LOOTING.getMaxLevel() + 1));
+        }
+        human.setItemSlot(EquipmentSlot.MAINHAND, dagger);
+        human.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+
+        if (random.nextFloat() < 0.3F) {
+            equipArmorSet(human, random, tier1Armor, 0.3F, 0.3F);
+        }
+    }
+
+    private static ItemStack pickBanditDagger(RandomSource random) {
+        List<Item> daggers = new ArrayList<>();
+        addIfPresent(daggers, "epicfight:iron_dagger", 3);
+        addIfPresent(daggers, "epicfight:diamond_dagger", 2);
+        addIfPresent(daggers, "epicfight:netherite_dagger", 1);
+
+        if (daggers.isEmpty()) {
+            return (random.nextFloat() < 0.2F ? Items.DIAMOND_SWORD : Items.IRON_SWORD).getDefaultInstance();
+        }
+
+        return daggers.get(random.nextInt(daggers.size())).getDefaultInstance();
+    }
+
+    private static void equipArmorSet(Human human, RandomSource random, int[] armorPick, float enchantChance, float omitHelmetChance) {
+        int pick = armorPick[random.nextInt(armorPick.length)];
+        int pickForChest = -1;
+
+        var slots = EquipmentSlot.values();
+        ArrayUtils.reverse(slots);
+        for (EquipmentSlot slot : slots) {
+            if (slot.getType() != EquipmentSlot.Type.ARMOR) {
+                continue;
+            }
+            if (slot == EquipmentSlot.HEAD && random.nextFloat() < omitHelmetChance) {
+                continue;
+            }
+            if (slot == EquipmentSlot.LEGS && pickForChest > pick) {
+                pick = pickForChest;
+            }
+
+            Item item = customGetEquipmentForSlot(slot, pick);
+            if (slot == EquipmentSlot.CHEST) {
+                pickForChest = pick;
+            }
+            if (item != null) {
+                human.setItemSlot(slot, damage(human, item.getDefaultInstance()));
+                human.enchantGeneratedArmor(random, enchantChance, slot);
+            }
+        }
+    }
+
+    private static ItemStack pickRoninSword(RandomSource random) {
+        List<Item> uchigatana = new ArrayList<>();
+        List<Item> tachi = new ArrayList<>();
+        List<Item> katana = new ArrayList<>();
+
+        addIfPresent(uchigatana, "epicfight:iron_uchigatana", 1);
+        addIfPresent(uchigatana, "epicfight:diamond_uchigatana", 1);
+        addIfPresent(uchigatana, "epicfight:uchigatana", 1);
+        addIfPresent(tachi, "epicfight:iron_tachi", 1);
+        addIfPresent(tachi, "epicfight:diamond_tachi", 1);
+        addIfPresent(tachi, "epicfight:tachi", 1);
+        addIfPresent(katana, "epicfight:iron_katana", 1);
+        addIfPresent(katana, "epicfight:diamond_katana", 1);
+        addIfPresent(katana, "epicfight:katana", 1);
+
+        List<Item> weapons = pickWeightedRoninWeaponGroup(random, uchigatana, tachi, katana);
+        if (weapons == null || weapons.isEmpty()) {
+            return (random.nextBoolean() ? Items.DIAMOND_SWORD : Items.IRON_SWORD).getDefaultInstance();
+        }
+
+        return weapons.get(random.nextInt(weapons.size())).getDefaultInstance();
+    }
+
+    private static List<Item> pickWeightedRoninWeaponGroup(RandomSource random, List<Item> uchigatana, List<Item> tachi, List<Item> katana) {
+        int uchigatanaWeight = uchigatana.isEmpty() ? 0 : 4;
+        int tachiWeight = tachi.isEmpty() ? 0 : 3;
+        int katanaWeight = katana.isEmpty() ? 0 : 3;
+        int totalWeight = uchigatanaWeight + tachiWeight + katanaWeight;
+        if (totalWeight == 0) {
+            return null;
+        }
+
+        int pick = random.nextInt(totalWeight);
+        if (pick < uchigatanaWeight) {
+            return uchigatana;
+        }
+        if (pick < uchigatanaWeight + tachiWeight) {
+            return tachi;
+        }
+        return katana;
     }
 
     private static Item pickMainHandWeapon(Item[] vanillaWeapons, HumanTier humanTier, RandomSource random) {

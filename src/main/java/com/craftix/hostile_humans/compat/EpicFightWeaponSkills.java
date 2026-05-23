@@ -32,11 +32,13 @@ public class EpicFightWeaponSkills {
         human.setEpicFightSkillCooldown(80 + human.getRandom().nextInt(50));
         switch (skillType) {
             case SPEAR -> useSingleTargetSkill(human, livingTarget, "biped/skill/heartpiercer", 1.6F, 0.65D, 60);
-            case LONGSWORD -> useArcSkill(human, livingTarget, "biped/skill/sweeping_edge", 1.0F, 3.2D, 0.45D, 30);
+            case LONGSWORD -> useArcSkill(human, livingTarget, "biped/combat/longsword_airslash", 1.0F, 3.2D, 0.45D, 30);
             case DAGGER -> useSingleTargetSkill(human, livingTarget, human.getRandom().nextBoolean() ? "biped/skill/eviscerate_first" : "biped/skill/eviscerate_second", 1.25F, 0.25D, 50);
             case GREATSWORD -> useArcSkill(human, livingTarget, human.getRandom().nextBoolean() ? "biped/skill/the_guillotine" : "biped/skill/steel_whirlwind", 1.45F, 3.6D, 0.9D, 45);
             case FIST -> useSingleTargetSkill(human, livingTarget, "biped/skill/relentless_combo", 1.05F, 0.5D, 35);
             case DUAL_SWORD -> useArcSkill(human, livingTarget, "biped/skill/dancing_edge", 0.9F, 3.0D, 0.35D, 25);
+            case TACHI -> useSingleTargetSkill(human, livingTarget, human.getRandom().nextBoolean() ? "biped/skill/rushing_tempo1" : "biped/skill/rushing_tempo2", 1.4F, 0.8D, 45);
+            case UCHIGATANA -> useSingleTargetSkill(human, livingTarget, human.distanceToSqr(livingTarget) > 12.0D ? "biped/skill/battojutsu_dash" : "biped/skill/battojutsu", 1.35F, 0.55D, 40);
         }
         return true;
     }
@@ -65,6 +67,12 @@ public class EpicFightWeaponSkills {
         }
         if (path.contains("greatsword")) {
             return SkillType.GREATSWORD;
+        }
+        if (path.contains("tachi")) {
+            return SkillType.TACHI;
+        }
+        if (path.contains("uchigatana") || path.contains("katana")) {
+            return SkillType.UCHIGATANA;
         }
         if (path.equals("glove")) {
             return SkillType.FIST;
@@ -115,6 +123,8 @@ public class EpicFightWeaponSkills {
         DAGGER,
         GREATSWORD,
         FIST,
-        DUAL_SWORD
+        DUAL_SWORD,
+        TACHI,
+        UCHIGATANA
     }
 }

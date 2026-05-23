@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "DoorInteractMixin",
+    "IronGolemMixin",
     "MinecraftServerMix",
     "MonsterMobsMixin",
     "PathNavMix",

@@ -17,6 +17,10 @@ public class CreativeTabEvents {
             event.accept(ModItems.HUMAN1_SPAWN_EGG.get());
             event.accept(ModItems.HUMAN2_SPAWN_EGG.get());
             event.accept(ModItems.ROAMER_SPAWN_EGG.get());
+            event.accept(ModItems.RONIN_SPAWN_EGG.get());
+            event.accept(ModItems.SAMURAI1_SPAWN_EGG.get());
+            event.accept(ModItems.SAMURAI2_SPAWN_EGG.get());
+            event.accept(ModItems.BANDIT_SPAWN_EGG.get());
         }
     }
 }

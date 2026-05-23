@@ -15,7 +15,31 @@
       "maxCount": 1
     },
     {
-      "type": "hostile_humans:human_spawner",
+      "type": "hostile_humans:human_ronin",
+      "weight": 1,
+      "minCount": 1,
+      "maxCount": 1
+    },
+    {
+      "type": "hostile_humans:human_samurai1",
+      "weight": 1,
+      "minCount": 1,
+      "maxCount": 1
+    },
+    {
+      "type": "hostile_humans:human_samurai2",
+      "weight": 1,
+      "minCount": 1,
+      "maxCount": 1
+    },
+    {
+      "type": "hostile_humans:human_bandit",
+      "weight": 1,
+      "minCount": 1,
+      "maxCount": 1
+    },
+    {
+      "type": "hostile_humans:human_group",
       "weight": 1,
       "minCount": 1,
       "maxCount": 1

@@ -7,7 +7,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.HumanoidMobRenderer;
 import net.minecraft.client.renderer.entity.layers.*;
@@ -28,18 +27,12 @@ import org.jetbrains.annotations.Nullable;
 @OnlyIn(Dist.CLIENT)
 public class HumanRenderer extends HumanoidMobRenderer<Human, PlayerModel<Human>> {
     public HumanRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
+        super(context, new PlayerModel<>(context.bakeLayer(ClientRenderer.HUMAN_MODEL_LAYER), false), 0.5F);
         this.addLayer(new HumanoidArmorLayer<>(this, new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_INNER_ARMOR)), new HumanoidModel(context.bakeLayer(ModelLayers.PLAYER_OUTER_ARMOR)), context.getModelManager()));
         this.addLayer(new ArrowLayer<>(context, this));
         this.addLayer(new CustomHeadLayer<>(this, context.getModelSet(), context.getItemInHandRenderer()));
         this.addLayer(new ElytraLayer<>(this, context.getModelSet()));
         this.addLayer(new BeeStingerLayer<>(this));
-    }
-
-    @Nullable
-    @Override
-    protected RenderType getRenderType(Human p_115322_, boolean p_115323_, boolean p_115324_, boolean p_115325_) {
-        return RenderType.entityCutoutNoCull(p_115322_.getResourceLocation());
     }
 
     @Override
@@ -98,9 +91,7 @@ public class HumanRenderer extends HumanoidMobRenderer<Human, PlayerModel<Human>
 
     @Override
     public void render(Human human, float pEntityYaw, float pPartialTicks, @NotNull PoseStack pMatrixStack, @NotNull MultiBufferSource pBuffer, int pPackedLight) {
-        model.setAllVisible(true);
-        model.leftArmPose = HumanoidModel.ArmPose.EMPTY;
-        model.rightArmPose = HumanoidModel.ArmPose.EMPTY;
+        resetModelState();
         ItemStack stack = human.getMainHandItem();
         if (!stack.isEmpty()) {
             if (stack.getItem() instanceof CrossbowItem) {
@@ -126,6 +117,16 @@ public class HumanRenderer extends HumanoidMobRenderer<Human, PlayerModel<Human>
         }
 
         super.render(human, pEntityYaw, pPartialTicks, pMatrixStack, pBuffer, pPackedLight);
+    }
+
+    private void resetModelState() {
+        model.setAllVisible(true);
+        model.young = false;
+        model.riding = false;
+        model.crouching = false;
+        model.attackTime = 0.0F;
+        model.leftArmPose = HumanoidModel.ArmPose.EMPTY;
+        model.rightArmPose = HumanoidModel.ArmPose.EMPTY;
     }
 
     private void setHandPose(Human entity, HumanoidModel.ArmPose pose) {

@@ -171,8 +171,12 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
 
     private void initTeam(HumanTier type) {
         if (team.isEmpty()) {
-            if (type == HumanTier.ROAMER) {
+            if (type == HumanTier.ROAMER || type == HumanTier.RONIN) {
                 team = "roamer" + getRandom().nextInt(1, 100000);
+            } else if (type == HumanTier.SAMURAI1 || type == HumanTier.SAMURAI2) {
+                team = "samurai";
+            } else if (type == HumanTier.BANDIT) {
+                team = "bandit";
             } else {
                 team = "human";
             }
@@ -185,8 +189,8 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         boolean pseudoGuarded = tryPseudoGuard(damageSource, amount);
         float finalAmount = pseudoGuarded ? amount * 0.3F : amount;
 
-        if (damageSource.getEntity() instanceof Player attacker) {
-            if (getTarget() == null) setTarget(attacker);
+        if (damageSource.getEntity() instanceof LivingEntity attacker && canAttack(attacker)) {
+            setTarget(attacker);
         }
 
         if (finalAmount > 1 && !pseudoGuarded) {
@@ -285,9 +289,9 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         goalSelector.addGoal(0, new InvestigateSoundGoal(this, 1.0F));
         goalSelector.addGoal(1, new PotionRangedAttackGoal(this, 1.0, 10, 10));
         goalSelector.addGoal(3, new RaiseShieldGoal(this));
-        goalSelector.addGoal(-30, new LookForChestGoal(this, 1.0F));
+        goalSelector.addGoal(getTier() == HumanTier.BANDIT ? -60 : -30, new LookForChestGoal(this, 1.0F));
         goalSelector.addGoal(-30, new LookForBedGoal(this, 1.0F));
-        if ((this.getType() == ROAMER.get())) {
+        if (isRoamerLikeTier(getTier())) {
             goalSelector.addGoal(8, new RandomStrollGoalFar(this, 0.65D, 15, false));
         } else {
             goalSelector.addGoal(8, new RandomStrollGoalWithHome(this, 0.65D, 120, true));
@@ -296,8 +300,9 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         goalSelector.addGoal(10, new RandomLookAroundGoal(this));
         goalSelector.addGoal(11, new HumanLookAtPlayerGoal(this, Player.class, 64.0F));
         targetSelector.addGoal(0, new HurtByTargetGoal(this).setAlertOthers());
-        targetSelector.addGoal(2, new NearestAttackableTargetGoalCustom<>(this, LivingEntity.class, 13, true, false, this::isAngryAt));
         targetSelector.addGoal(1, new NearestAttackableTargetGoalWithHumanLimiter<>(this, Player.class, true));
+        targetSelector.addGoal(2, new NearestAttackableTargetGoalCustom<>(this, Human.class, 8, true, false, this::isAngryAt));
+        targetSelector.addGoal(3, new NearestAttackableTargetGoalCustom<>(this, LivingEntity.class, 13, true, false, this::isAngryAt));
         targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (target) -> {
         	if (target instanceof EnderMan) return false;
             if (this.getTier() == HumanTier.ROAMER) {
@@ -436,6 +441,18 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
     @Override
     public boolean canAttack(LivingEntity entity) {
         if (entity instanceof Human otherHuman && otherHuman.isAlive()) {
+            if (isBanditTier(otherHuman.getTier())) {
+                return !isBanditTier(getTier());
+            }
+            if (isBanditTier(getTier())) {
+                return !isBanditTier(otherHuman.getTier());
+            }
+            if (isSamuraiTier(getTier()) || isSamuraiTier(otherHuman.getTier())) {
+                return false;
+            }
+            if (shouldSuspendRoamerInfighting(otherHuman)) {
+                return false;
+            }
             return !this.team.equals(otherHuman.team);
         }
 
@@ -444,6 +461,18 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
 
     public boolean isAngryAt(LivingEntity entity) {
         if (entity instanceof Human otherHuman && otherHuman.isAlive()) {
+            if (isBanditTier(getTier())) {
+                return false;
+            }
+            if (isBanditTier(otherHuman.getTier())) {
+                return true;
+            }
+            if (isSamuraiTier(getTier()) || isSamuraiTier(otherHuman.getTier())) {
+                return false;
+            }
+            if (shouldSuspendRoamerInfighting(otherHuman)) {
+                return false;
+            }
             return !this.team.equals(otherHuman.team);
         }
 
@@ -459,6 +488,33 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         }
 
         return entity.getUUID().equals(this.getPersistentAngerTarget());
+    }
+
+    private boolean shouldSuspendRoamerInfighting(Human otherHuman) {
+        return isRoamerLikeTier(this.getTier())
+                && isRoamerLikeTier(otherHuman.getTier())
+                && hasNearbyCommonHuman();
+    }
+
+    private boolean hasNearbyCommonHuman() {
+        return !level().getEntitiesOfClass(Human.class, getBoundingBox().inflate(24.0D),
+                human -> human != this && human.isAlive() && isCommonHumanTier(human.getTier())).isEmpty();
+    }
+
+    private static boolean isRoamerLikeTier(HumanTier tier) {
+        return tier == HumanTier.ROAMER || tier == HumanTier.RONIN;
+    }
+
+    private static boolean isSamuraiTier(HumanTier tier) {
+        return tier == HumanTier.SAMURAI1 || tier == HumanTier.SAMURAI2;
+    }
+
+    private static boolean isBanditTier(HumanTier tier) {
+        return tier == HumanTier.BANDIT;
+    }
+
+    private static boolean isCommonHumanTier(HumanTier tier) {
+        return tier == HumanTier.LEVEL1 || tier == HumanTier.LEVEL2;
     }
 
     @Override
