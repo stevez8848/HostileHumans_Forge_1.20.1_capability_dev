@@ -177,6 +177,8 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
                 team = "samurai";
             } else if (type == HumanTier.BANDIT) {
                 team = "bandit";
+            } else if (type == HumanTier.MERCENARY) {
+                team = "mercenary";
             } else {
                 team = "human";
             }
@@ -284,12 +286,14 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         goalSelector.addGoal(-5, new OpenTrapdoorGoal(this, true));
         goalSelector.addGoal(-5, new LadderClimbGoal(this));
         goalSelector.addGoal(0, new FindWaterOnFireGoal(this, 1.2D));
-        goalSelector.addGoal(0, new RunFromTarget(this, 6.0F, 1.0D, 1.2D));
+        goalSelector.addGoal(0, new RunFromTarget(this, 30.0F, 1.0D, 1.35D));
         goalSelector.addGoal(0, new AvoidTNTGoal(this, 6.0F, 1.0D, 1.2D));
         goalSelector.addGoal(0, new InvestigateSoundGoal(this, 1.0F));
         goalSelector.addGoal(1, new PotionRangedAttackGoal(this, 1.0, 10, 10));
         goalSelector.addGoal(3, new RaiseShieldGoal(this));
-        goalSelector.addGoal(getTier() == HumanTier.BANDIT ? -60 : -30, new LookForChestGoal(this, 1.0F));
+        if (canLootChests()) {
+            goalSelector.addGoal(getTier() == HumanTier.BANDIT ? -60 : -30, new LookForChestGoal(this, 1.0F));
+        }
         goalSelector.addGoal(-30, new LookForBedGoal(this, 1.0F));
         if (isRoamerLikeTier(getTier())) {
             goalSelector.addGoal(8, new RandomStrollGoalFar(this, 0.65D, 15, false));
@@ -333,6 +337,10 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
                 goalSelector.addGoal(2, meleeAttackGoal);
             }
         }
+    }
+
+    public boolean canLootChests() {
+        return true;
     }
 
     @Override
@@ -440,12 +448,24 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
 
     @Override
     public boolean canAttack(LivingEntity entity) {
+        if (isMercenaryTier(getTier()) && entity instanceof Player) {
+            return false;
+        }
         if (entity instanceof Human otherHuman && otherHuman.isAlive()) {
             if (isBanditTier(otherHuman.getTier())) {
                 return !isBanditTier(getTier());
             }
+            if (isMercenaryTier(getTier())) {
+                return isMercenaryTargetTier(otherHuman.getTier());
+            }
             if (isBanditTier(getTier())) {
                 return !isBanditTier(otherHuman.getTier());
+            }
+            if (isMercenaryTier(otherHuman.getTier())) {
+                return false;
+            }
+            if (isSamuraiTier(getTier()) && otherHuman.getTier() == HumanTier.RONIN) {
+                return true;
             }
             if (isSamuraiTier(getTier()) || isSamuraiTier(otherHuman.getTier())) {
                 return false;
@@ -464,7 +484,16 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
             if (isBanditTier(getTier())) {
                 return false;
             }
+            if (isMercenaryTier(getTier())) {
+                return isMercenaryTargetTier(otherHuman.getTier());
+            }
             if (isBanditTier(otherHuman.getTier())) {
+                return true;
+            }
+            if (isMercenaryTier(otherHuman.getTier())) {
+                return false;
+            }
+            if (isSamuraiTier(getTier()) && otherHuman.getTier() == HumanTier.RONIN) {
                 return true;
             }
             if (isSamuraiTier(getTier()) || isSamuraiTier(otherHuman.getTier())) {
@@ -513,8 +542,20 @@ public class Human extends HumanEntity implements RangedAttackMob, CrossbowAttac
         return tier == HumanTier.BANDIT;
     }
 
+    private static boolean isMercenaryTier(HumanTier tier) {
+        return tier == HumanTier.MERCENARY;
+    }
+
+    private static boolean isMercenaryTargetTier(HumanTier tier) {
+        return tier == HumanTier.RONIN || tier == HumanTier.ROAMER || tier == HumanTier.BANDIT;
+    }
+
     private static boolean isCommonHumanTier(HumanTier tier) {
         return tier == HumanTier.LEVEL1 || tier == HumanTier.LEVEL2;
+    }
+
+    public double getHomePatrolRadius() {
+        return 10.0D;
     }
 
     @Override

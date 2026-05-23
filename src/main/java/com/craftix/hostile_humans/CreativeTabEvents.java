@@ -21,6 +21,7 @@ public class CreativeTabEvents {
             event.accept(ModItems.SAMURAI1_SPAWN_EGG.get());
             event.accept(ModItems.SAMURAI2_SPAWN_EGG.get());
             event.accept(ModItems.BANDIT_SPAWN_EGG.get());
+            event.accept(ModItems.MERCENARY_SPAWN_EGG.get());
         }
     }
 }

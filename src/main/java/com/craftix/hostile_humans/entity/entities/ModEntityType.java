@@ -40,6 +40,9 @@ public class ModEntityType {
     public static final RegistryObject<EntityType<Bandit>> BANDIT = ENTITIES.register("human_bandit",
             () -> EntityType.Builder.<Bandit>of(Bandit::new, HumanEntity.CATEGORY)
                     .sized(0.6F, 1.8F).clientTrackingRange(16).build("human_bandit"));
+    public static final RegistryObject<EntityType<Mercenary>> MERCENARY = ENTITIES.register("human_mercenary",
+            () -> EntityType.Builder.<Mercenary>of(Mercenary::new, HumanEntity.CATEGORY)
+                    .sized(0.6F, 1.8F).clientTrackingRange(16).build("human_mercenary"));
     public static final RegistryObject<EntityType<SpawnerEntity>> SPAWNER_ENTITY = ENTITIES.register("human_group",
             () -> EntityType.Builder.of(SpawnerEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 1.8F).clientTrackingRange(16).build("human_group"));
@@ -57,6 +60,7 @@ public class ModEntityType {
         event.put(SAMURAI1.get(), Human.createAttributes().build());
         event.put(SAMURAI2.get(), Human.createAttributes().build());
         event.put(BANDIT.get(), Human.createAttributes().build());
+        event.put(MERCENARY.get(), Human.createAttributes().build());
         event.put(SPAWNER_ENTITY.get(), Human.createAttributes().build());
 
         if (ModList.get().isLoaded("travelersbackpack")) {

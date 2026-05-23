@@ -27,7 +27,7 @@ public class Config {
         maxTargeting = BUILDER.comment("The max amount of humans that can attack you at the same time").define("max_targeting", 3);
         greetChance = BUILDER.comment("The chance to send a chat message to the player upon targeting them").define("greet_chance", 0.08d);
         fleeChance = BUILDER.comment("The chance to run away from the player during the battle").define("flee_chance", 0.3d);
-        fleeHpPercent = BUILDER.comment("The % of hp to start fleeing").define("flee_hp", 0.35d);
+        fleeHpPercent = BUILDER.comment("The % of hp to start fleeing").define("flee_hp", 0.3d);
         healCombatPercent = BUILDER.comment("The % of hp to attempt healing during combat").define("heal_combat", 0.5d);
         throwPotionsEvery = BUILDER.comment("Throw potions every x ticks").define("throw_potions_every", 20 * 100);
         runJump = BUILDER.comment("Humans can run and jump (like a player)").define("run_jump", true);

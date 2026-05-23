@@ -30,6 +30,11 @@ public class RunFromTarget extends Goal {
     protected Path path;
     Vec3 targetPos = null;
     boolean jump;
+    private int retreatCooldown;
+    private int healTicks;
+    private boolean healingAtDistance;
+    @Nullable
+    private LivingEntity returnTarget;
 
     public RunFromTarget(Human p_25027_, float p_25029_, double p_25030_, double p_25031_) {
         this(p_25027_, (p_25052_) -> {
@@ -49,32 +54,44 @@ public class RunFromTarget extends Goal {
     }
 
     public boolean canUse() {
+        if (retreatCooldown > 0) {
+            retreatCooldown--;
+            return false;
+        }
         if (human.getOffhandItem().is(Items.TOTEM_OF_UNDYING))
             return false;
 
-        if (String.valueOf(human.getId()).hashCode() % 100 > Config.fleeChance.get() * 100)
+        if (!isRetreatHealth())
             return false;
 
-        if (!HumanUtil.isLowHp(human))
-            return false;
-
-        if (human.getTarget() != null || human.toAvoid == null || !(human.toAvoid.distanceTo(human) < 15)) {
-            human.toAvoid = human.getTarget();
-        }
-        human.setTarget(null);
-
+        human.toAvoid = human.getTarget();
+        returnTarget = human.toAvoid;
         if (human.toAvoid == null) {
             return false;
-        } else {
-            return generatePathAwayFromAttacker();
         }
+
+        if (human.getRandom().nextFloat() >= Config.fleeChance.get()) {
+            retreatCooldown = 20 * 8 + human.getRandom().nextInt(20 * 4);
+            return false;
+        }
+
+        human.setTarget(null);
+        healingAtDistance = false;
+        healTicks = 0;
+
+        if (!generatePathAwayFromAttacker()) {
+            retreatCooldown = 20 * 8 + human.getRandom().nextInt(20 * 4);
+            return false;
+        }
+
+        return true;
     }
 
     private boolean generatePathAwayFromAttacker() {
 
         Vec3 vec3 = null;
         for (int i = 0; i < 10; ++i) {
-            vec3 = DefaultRandomPos.getPosAway(this.human, 64, 7, human.toAvoid.position());
+            vec3 = DefaultRandomPos.getPosAway(this.human, 30, 7, human.toAvoid.position());
             if (vec3 != null) {
                 break;
             }
@@ -91,16 +108,27 @@ public class RunFromTarget extends Goal {
     }
 
     public boolean canContinueToUse() {
-        if (!HumanUtil.isLowHp(human))
-            return false;
-        if (human.toAvoid instanceof Player player && (player.isSpectator() || player.isCreative())) {
-            return false;
-        }
         if (human.toAvoid == null) {
             return false;
         }
+        if (!isRetreatHealth() && !healingAtDistance) {
+            return false;
+        }
+        if (human.toAvoid instanceof Player player && (player.isSpectator() || player.isCreative())) {
+            return false;
+        }
 
-        if (this.human.distanceToSqr(human.toAvoid) > 16 * 16) {
+        if (healingAtDistance) {
+            return healTicks < 20 * 8 && human.getHealth() < human.getMaxHealth() * 0.6F;
+        }
+
+        double distanceSqr = this.human.distanceToSqr(human.toAvoid);
+        if (distanceSqr >= 20 * 20) {
+            startHealingAtDistance();
+            return true;
+        }
+
+        if (distanceSqr > 30 * 30) {
             return false;
         }
 
@@ -110,21 +138,44 @@ public class RunFromTarget extends Goal {
             jump = false;
             pathNav.stop();
             generatePathAwayFromAttacker();
-            this.pathNav.moveTo(this.path, this.walkSpeedModifier);
+            if (this.path != null) {
+                this.pathNav.moveTo(this.path, this.sprintSpeedModifier);
+            }
         }
 
-        return !this.pathNav.isDone();
+        if (this.pathNav.isDone()) {
+            if (distanceSqr >= 16 * 16) {
+                startHealingAtDistance();
+                return true;
+            }
+            if (generatePathAwayFromAttacker() && this.path != null) {
+                this.pathNav.moveTo(this.path, this.sprintSpeedModifier);
+                return true;
+            }
+            return false;
+        }
+
+        return true;
     }
 
     public void start() {
-        this.pathNav.moveTo(this.path, this.walkSpeedModifier);
+        this.human.setSprinting(true);
+        this.pathNav.moveTo(this.path, this.sprintSpeedModifier);
     }
 
     public void stop() {
         //System.out.println("stop flee");
         human.isFleeing = false;
+        human.setSprinting(false);
         human.onPlayerJumpCoolDown = 20;
+        if (returnTarget != null && returnTarget.isAlive() && human.canAttack(returnTarget)) {
+            human.setTarget(returnTarget);
+        }
         human.toAvoid = null;
+        returnTarget = null;
+        healingAtDistance = false;
+        healTicks = 0;
+        retreatCooldown = 20 * 25 + human.getRandom().nextInt(20 * 10);
     }
 
     public void tick() {
@@ -133,10 +184,27 @@ public class RunFromTarget extends Goal {
         //System.out.println("tick flee");
         human.isFleeing = true;
         human.setTarget(null);
-        if (this.human.distanceToSqr(human.toAvoid) < 7 * 7) {
-            this.human.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
-        } else {
-            this.human.getNavigation().setSpeedModifier(this.walkSpeedModifier);
+        if (healingAtDistance) {
+            this.human.getNavigation().stop();
+            this.human.setSprinting(false);
+            healTicks++;
+            if (healTicks % 20 == 0 && human.getHealth() < human.getMaxHealth()) {
+                human.heal(2.0F);
+            }
+            return;
         }
+
+        this.human.setSprinting(true);
+        this.human.getNavigation().setSpeedModifier(this.sprintSpeedModifier);
+    }
+
+    private boolean isRetreatHealth() {
+        return human.getHealth() > 0.0F && human.getHealth() < human.getMaxHealth() * 0.3F;
+    }
+
+    private void startHealingAtDistance() {
+        this.pathNav.stop();
+        this.healingAtDistance = true;
+        this.healTicks = 0;
     }
 }

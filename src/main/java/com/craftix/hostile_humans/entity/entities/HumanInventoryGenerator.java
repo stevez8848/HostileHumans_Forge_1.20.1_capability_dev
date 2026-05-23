@@ -61,6 +61,10 @@ public class HumanInventoryGenerator {
                 generateBanditInventory(human, random);
                 return;
             }
+            case MERCENARY -> {
+                generateMercenaryInventory(human, random);
+                return;
+            }
             case LEVEL2 -> {
                 armorPick = tier2Armor;
                 weaponPick = tier2Weapons;
@@ -252,6 +256,43 @@ public class HumanInventoryGenerator {
         return daggers.get(random.nextInt(daggers.size())).getDefaultInstance();
     }
 
+    private static void generateMercenaryInventory(Human human, RandomSource random) {
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            human.setItemSlot(slot, ItemStack.EMPTY);
+        }
+
+        ItemStack weapon = pickMercenaryWeapon(random);
+        damage(human, weapon);
+        human.setItemSlot(EquipmentSlot.MAINHAND, weapon);
+
+        if (random.nextFloat() < 0.45F && canUseOffhandDefense(weapon) && !HumanUtil.isRangedWeapon(weapon)) {
+            ItemStack shield = Items.SHIELD.getDefaultInstance();
+            damage(human, shield);
+            human.setItemSlot(EquipmentSlot.OFFHAND, shield);
+        }
+
+        if (random.nextFloat() < 0.45F) {
+            equipArmorSet(human, random, tier1Armor, 0.4F, 0.45F);
+        }
+    }
+
+    private static ItemStack pickMercenaryWeapon(RandomSource random) {
+        List<Item> weapons = new ArrayList<>();
+        addIfPresent(weapons, "epicfight:iron_longsword", 5);
+        addIfPresent(weapons, "epicfight:diamond_longsword", 2);
+        addIfPresent(weapons, "epicfight:iron_spear", 5);
+        addIfPresent(weapons, "epicfight:diamond_spear", 2);
+        addIfPresent(weapons, "epicfight:stone_longsword", 1);
+        addIfPresent(weapons, "epicfight:stone_spear", 1);
+
+        for (int i = 0; i < 5; i++) {
+            weapons.add(Items.CROSSBOW);
+        }
+        weapons.add(Items.IRON_SWORD);
+
+        return weapons.get(random.nextInt(weapons.size())).getDefaultInstance();
+    }
+
     private static void equipArmorSet(Human human, RandomSource random, int[] armorPick, float enchantChance, float omitHelmetChance) {
         int pick = armorPick[random.nextInt(armorPick.length)];
         int pickForChest = -1;
@@ -324,25 +365,35 @@ public class HumanInventoryGenerator {
 
     private static Item pickMainHandWeapon(Item[] vanillaWeapons, HumanTier humanTier, RandomSource random) {
         List<Item> weapons = new ArrayList<>(Arrays.asList(vanillaWeapons));
+        List<Item> longswords = new ArrayList<>();
 
         if (humanTier == LEVEL2) {
+            addIfPresent(longswords, "epicfight:netherite_longsword", 1);
+            addIfPresent(longswords, "epicfight:diamond_longsword", 4);
+            addIfPresent(longswords, "epicfight:iron_longsword", 2);
             addIfPresent(weapons, "epicfight:diamond_spear", 2);
-            addIfPresent(weapons, "epicfight:diamond_longsword", 3);
+            addIfPresent(weapons, "epicfight:diamond_longsword", 5);
             addIfPresent(weapons, "epicfight:diamond_dagger", 3);
             addIfPresent(weapons, "epicfight:diamond_greatsword", 2);
             addIfPresent(weapons, "epicfight:iron_spear", 1);
-            addIfPresent(weapons, "epicfight:iron_longsword", 1);
+            addIfPresent(weapons, "epicfight:iron_longsword", 2);
             addIfPresent(weapons, "epicfight:iron_dagger", 1);
             addIfPresent(weapons, "epicfight:iron_greatsword", 1);
         } else {
+            addIfPresent(longswords, "epicfight:iron_longsword", 4);
+            addIfPresent(longswords, "epicfight:stone_longsword", 2);
             addIfPresent(weapons, "epicfight:iron_spear", 2);
-            addIfPresent(weapons, "epicfight:iron_longsword", 2);
+            addIfPresent(weapons, "epicfight:iron_longsword", 5);
             addIfPresent(weapons, "epicfight:iron_dagger", 2);
             addIfPresent(weapons, "epicfight:iron_greatsword", 1);
             addIfPresent(weapons, "epicfight:stone_spear", 1);
-            addIfPresent(weapons, "epicfight:stone_longsword", 1);
+            addIfPresent(weapons, "epicfight:stone_longsword", 3);
             addIfPresent(weapons, "epicfight:stone_dagger", 1);
             addIfPresent(weapons, "epicfight:stone_greatsword", 1);
+        }
+
+        if (!longswords.isEmpty() && random.nextFloat() < (humanTier == LEVEL2 ? 0.22F : 0.18F)) {
+            return longswords.get(random.nextInt(longswords.size()));
         }
 
         addIfPresent(weapons, "epicfight:glove", humanTier == LEVEL2 ? 3 : 2);

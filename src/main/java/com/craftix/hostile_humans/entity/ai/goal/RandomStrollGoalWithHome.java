@@ -17,7 +17,8 @@ public class RandomStrollGoalWithHome extends RandomStrollGoal {
     protected Vec3 getPosition() {
 
         BlockPos homePos = human.getHomePos();
-        if (homePos != null && homePos.distToCenterSqr(human.position()) > 10 * 10) {
+        double patrolRadius = human.getHomePatrolRadius();
+        if (homePos != null && homePos.distToCenterSqr(human.position()) > patrolRadius * patrolRadius) {
             return new Vec3(homePos.getX(), homePos.getY(), homePos.getZ());
         }
 

@@ -42,4 +42,8 @@ public class ModItems {
             () -> new ForgeSpawnEggItem(ModEntityType.BANDIT, MapColor.COLOR_BLACK.col,
                     MapColor.GOLD.col,
                     new Item.Properties().rarity(Rarity.EPIC)));
+    public static final RegistryObject<Item> MERCENARY_SPAWN_EGG = ITEMS.register("human_mercenary_spawn_egg",
+            () -> new ForgeSpawnEggItem(ModEntityType.MERCENARY, MapColor.COLOR_BLUE.col,
+                    MapColor.GOLD.col,
+                    new Item.Properties().rarity(Rarity.EPIC)));
 }

@@ -25,9 +25,6 @@ public class EventHandlerMod {
             return;
         }
 
-        registerBuiltinDatapack(event, "improved_humans");
-        registerBuiltinDatapack(event, "hardcore_humans");
-
         if (ModList.get().isLoaded("epicfightx")) {
             registerBuiltinDatapack(event, "hostile_humans_efx", true);
         }

@@ -28,6 +28,7 @@ public class ClientRenderer {
         event.registerEntityRenderer(ModEntityType.SAMURAI1.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.SAMURAI2.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.BANDIT.get(), HumanRenderer::new);
+        event.registerEntityRenderer(ModEntityType.MERCENARY.get(), HumanRenderer::new);
         event.registerEntityRenderer(ModEntityType.SPAWNER_ENTITY.get(), SpawnerEntityRenderer::new);
     }
 

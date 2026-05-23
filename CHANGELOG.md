@@ -1,5 +1,13 @@
 ## 更新日志
 
+- 调整：雇佣兵现在不再注册 `LookForChestGoal`，不会主动寻找、打开或占用箱子；普通 Human 与 Bandit 的开箱行为保持不变。
+- 修复：移除不存在的内置数据包 `improved_humans` 与 `hardcore_humans` 注册，避免进世界时出现 `Missing metadata in pack builtin/hostile_humans/*` 干扰数据包仓库加载排查。
+- 修复：为 Ronin、Samurai、Bandit 和 Mercenary 刷怪蛋补齐原版 `item/template_spawn_egg` 模型文件，保留原版刷怪蛋渲染并消除缺失模型警告。
+- 新增：加入第一阶段 `hostile_humans:human_mercenary`（雇佣兵）实体；雇佣兵对玩家中立，会主动攻击浪人、Roamer 和盗贼，并通过村庄 POI 补生成逻辑在村庄附近生成 1-6 个巡逻个体。
+- 调整：雇佣兵装备池优先使用 Epic Fight 长剑、长矛和弩，缺少 EF 武器时保守回退到铁剑，并有一定概率携带盾牌和轻量护甲。
+- 新增：重做低血量撤退逻辑；当 Human 生命值低于 30% 且正在战斗时，有 30% 概率进入临时撤退，拉开到约 20-30 格距离后回血并重新加入战斗。
+- 调整：提高普通 Human / Roamer 持有 Epic Fight 长剑的生成概率；武士现在会主动攻击浪人。
+
 - 调整：Human 的长剑伪进阶技能不再沿用普通剑 `sweeping_edge`，改为播放 `longsword_airslash` 长剑专属动画，并继续保留范围打击、击退和减速效果。
 
 - 修复：移除 `worldgen/structure_set/all_houses.json` 中的 `//` 注释，避免 Minecraft 数据包严格 JSON 解析失败导致 `hostile_humans:*` 结构集合无法注册，从而影响 `/place structure` 指令生成建筑。
